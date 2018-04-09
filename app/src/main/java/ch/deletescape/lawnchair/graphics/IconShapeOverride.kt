@@ -4,11 +4,8 @@ import android.annotation.TargetApi
 import android.content.Context
 import android.content.res.Resources
 import android.os.Build
-import android.os.Process
-import android.preference.ListPreference
-import android.preference.Preference
-import android.preference.Preference.OnPreferenceChangeListener
-import android.provider.Settings.Global
+import android.support.v7.preference.ListPreference
+import android.support.v7.preference.Preference
 import android.text.TextUtils
 import android.util.Log
 import ch.deletescape.lawnchair.LauncherAppState
@@ -20,14 +17,14 @@ import java.lang.reflect.Field
 @TargetApi(Build.VERSION_CODES.O)
 class IconShapeOverride {
 
-    class PreferenceChangeHandler constructor(val context: Context) : OnPreferenceChangeListener {
+    class PreferenceChangeHandler constructor(val context: Context) : Preference.OnPreferenceChangeListener {
 
         override fun onPreferenceChange(preference: Preference, obj: Any): Boolean {
             val str = obj as String
             if (getAppliedValue(context).savedPref != str) {
                 prefs(context).blockingEdit { overrideIconShape = str }
                 LauncherAppState.getInstance().iconCache.clear()
-                Process.killProcess(Process.myPid())
+                Utilities.restartLauncher(context)
             }
             return true
         }
@@ -91,13 +88,14 @@ class IconShapeOverride {
 
         fun getAppliedValue(context: Context): ShapeInfo {
             val prefs = prefs(context)
-            if (!Utilities.ATLEAST_NOUGAT) return ShapeInfo("", "", 100, prefs.usePixelIcons)
+            if (!Utilities.ATLEAST_NOUGAT) {
+                val mask = if (prefs.usePixelIcons) defaultMask else ""
+                return ShapeInfo(mask, mask, 100, prefs.usePixelIcons)
+            }
             val enablePlanes = prefs.enablePlanes
             var iconShape = if (enablePlanes) planeMask else prefs.overrideIconShape
             val savedPref = iconShape
             val useRoundIcon = iconShape != "none"
-            if (!Utilities.ATLEAST_OREO && TextUtils.isEmpty(iconShape))
-                iconShape = defaultMask
             return ShapeInfo(if (iconShape == "none") "" else iconShape, savedPref, if (enablePlanes) 24 else 100, useRoundIcon)
         }
 

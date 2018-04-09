@@ -27,24 +27,21 @@ import ch.deletescape.lawnchair.Utilities;
 import ch.deletescape.lawnchair.blur.BlurWallpaperProvider;
 import ch.deletescape.lawnchair.compat.LauncherActivityInfoCompat;
 import ch.deletescape.lawnchair.config.FeatureFlags;
-import ch.deletescape.lawnchair.preferences.IPreferenceProvider;
 
 public class EditIconActivity extends AppCompatActivity implements CustomIconAdapter.Listener, IconPackAdapter.Listener {
 
     private static final int REQUEST_PICK_ICON = 0;
     private EditableItemInfo mInfo;
-    private IPreferenceProvider mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         FeatureFlags.INSTANCE.applyDarkTheme(this);
+        Utilities.setupPirateLocale(this);
 
         Utilities.getPrefs(this).getEnableScreenRotation();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_icon);
-
-        mPrefs = Utilities.getPrefs(getApplicationContext());
 
         mInfo = getIntent().getExtras().getParcelable("itemInfo");
         if (mInfo == null) {
@@ -129,13 +126,15 @@ public class EditIconActivity extends AppCompatActivity implements CustomIconAda
     }
 
     private void resetIcon() {
-        setResult(RESULT_OK, new Intent());
+        Intent data = new Intent();
+        data.putExtra("alternateIcon", "-1");
+        setResult(RESULT_OK, data);
         finish();
     }
 
-    private void updateCache() {
-        //Utilities.updatePackage(this, mInfo.getUser(), mInfo.getComponentName().getPackageName());
-    }
+    /*private void updateCache() {
+        Utilities.updatePackage(this, mInfo.getUser(), mInfo.getComponentName().getPackageName());
+    }*/
 
     @Override
     public void startPicker(IconPackInfo iconPackInfo) {

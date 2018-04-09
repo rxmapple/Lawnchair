@@ -18,8 +18,8 @@ package ch.deletescape.lawnchair.config
 
 import android.app.Activity
 import android.content.Context
-import android.support.annotation.IntDef
 import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import ch.deletescape.lawnchair.R
 import ch.deletescape.lawnchair.Utilities
 import ch.deletescape.lawnchair.preferences.PreferenceProvider
@@ -33,11 +33,12 @@ object FeatureFlags {
     const val KEY_PREF_PINCH_TO_OVERVIEW = "pref_pinchToOverview"
     const val KEY_PREF_PULLDOWN_NOTIS = "pref_pulldownNotis"
     const val KEY_PREF_HOTSEAT_EXTRACTED_COLORS = "pref_hotseatShouldUseExtractedColors"
-    const val KEY_PREF_HAPTIC_FEEDBACK = "pref_enableHapticFeedback"
     const val KEY_PREF_KEEP_SCROLL_STATE = "pref_keepScrollState"
     const val KEY_FULL_WIDTH_SEARCHBAR = "pref_fullWidthSearchbar"
     const val KEY_SHOW_PIXEL_BAR = "pref_showPixelBar"
     const val KEY_HOME_OPENS_DRAWER = "pref_homeOpensDrawer"
+    const val KEY_SHOW_SEARCH_PILL = "pref_showSearchPill"
+    const val KEY_SHOW_DATE_OR_WEATHER = "pref_showDateOrWeather"
     const val KEY_SHOW_VOICE_SEARCH_BUTTON = "pref_showMic"
     const val KEY_PREF_PIXEL_STYLE_ICONS = "pref_pixelStyleIcons"
     const val KEY_PREF_HIDE_APP_LABELS = "pref_hideAppLabels"
@@ -60,6 +61,7 @@ object FeatureFlags {
     const val KEY_PREF_PULLDOWN_ACTION = "pref_pulldownAction"
     const val KEY_PREF_LOCK_DESKTOP = "pref_lockDesktop"
     const val KEY_PREF_ANIMATED_CLOCK_ICON = "pref_animatedClockIcon"
+    const val KEY_PREF_USE_SYSTEM_FONTS = "pref_useSystemFonts"
     private var darkThemeFlag: Int = 0
 
     const val DARK_QSB = 1
@@ -103,9 +105,17 @@ object FeatureFlags {
         Utilities.getPrefs(activity).migrateThemePref(activity)
         loadThemePreference(activity)
         if (FeatureFlags.useDarkTheme)
-            activity.setTheme(SETTINGS_THEMES[currentTheme])
+            activity.setTheme(SETTINGS_HOME_THEMES[currentTheme])
+    }
+
+    fun getLayoutInflator(layoutInflater: LayoutInflater) : LayoutInflater {
+        val context = layoutInflater.context
+        Utilities.getPrefs(context).migrateThemePref(context)
+        loadThemePreference(context)
+        return LayoutInflater.from(ContextThemeWrapper(context, SETTINGS_THEMES[currentTheme]))
     }
 
     private val LAUNCHER_THEMES = intArrayOf(R.style.LauncherTheme, R.style.LauncherTheme_Dark, R.style.LauncherTheme_Black)
     private val SETTINGS_THEMES = intArrayOf(R.style.SettingsTheme, R.style.SettingsTheme_Dark, R.style.SettingsTheme_Black)
+    private val SETTINGS_HOME_THEMES = intArrayOf(R.style.SettingsHome, R.style.SettingsHome_Dark, R.style.SettingsHome_Black)
 }

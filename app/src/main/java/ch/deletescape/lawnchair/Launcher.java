@@ -50,14 +50,15 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Process;
 import android.os.StrictMode;
 import android.os.UserHandle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -82,11 +83,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.microsoft.azure.mobile.MobileCenter;
-import com.microsoft.azure.mobile.analytics.Analytics;
-import com.microsoft.azure.mobile.crashes.Crashes;
-import com.microsoft.azure.mobile.distribute.Distribute;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,7 +96,7 @@ import ch.deletescape.lawnchair.accessibility.LauncherAccessibilityDelegate;
 import ch.deletescape.lawnchair.allapps.AllAppsContainerView;
 import ch.deletescape.lawnchair.allapps.AllAppsIconRowView;
 import ch.deletescape.lawnchair.allapps.AllAppsTransitionController;
-import ch.deletescape.lawnchair.allapps.DefaultAppSearchController;
+import ch.deletescape.lawnchair.allapps.UnicodeStrippedAppSearchController;
 import ch.deletescape.lawnchair.blur.BlurWallpaperProvider;
 import ch.deletescape.lawnchair.compat.AppWidgetManagerCompat;
 import ch.deletescape.lawnchair.compat.LauncherAppsCompat;
@@ -160,11 +156,12 @@ public class Launcher extends Activity
     private static final int REQUEST_RECONFIGURE_APPWIDGET = 12;
 
     private static final int REQUEST_PERMISSION_CALL_PHONE = 13;
+    public static final int REQUEST_PERMISSION_STORAGE_ACCESS = 666;
 
     private static final int REQUEST_EDIT_ICON = 14;
 
     private static final float BOUNCE_ANIMATION_TENSION = 1.3f;
-    
+
     private static final int SOFT_INPUT_MODE_DEFAULT =
             WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
     private static final int SOFT_INPUT_MODE_ALL_APPS =
@@ -290,7 +287,6 @@ public class Launcher extends Activity
     private boolean mAttached;
 
     private boolean kill;
-    private boolean recreate;
     private boolean reloadIcons;
     private boolean updateWallpaper = true;
 
@@ -371,12 +367,15 @@ public class Launcher extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         FeatureFlags.INSTANCE.loadThemePreference(this);
+        Utilities.setupPirateLocale(this);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && !Utilities.hasStoragePermission(this)) {
+            Utilities.requestStoragePermission(this);
+        }
+
         super.onCreate(savedInstanceState);
 
         setScreenOrientation();
-
-        if (!BuildConfig.MOBILE_CENTER_KEY.equalsIgnoreCase("null"))
-            MobileCenter.start(getApplication(), BuildConfig.MOBILE_CENTER_KEY, Analytics.class, Crashes.class, Distribute.class);
 
         LauncherAppState app = LauncherAppState.getInstance();
         app.setMLauncher(this);
@@ -439,12 +438,8 @@ public class Launcher extends Activity
         IntentFilter filter = new IntentFilter(ACTION_APPWIDGET_HOST_RESET);
         registerReceiver(mUiBroadcastReceiver, filter);
 
+        Utilities.showOutdatedLawnfeedPopup(this);
         mLauncherTab = new LauncherTab(this);
-
-        if (mSharedPrefs.getRequiresIconCacheReload()) {
-            mSharedPrefs.setRequiresIconCacheReload(false);
-            reloadIcons();
-        }
 
         Window window = getWindow();
         WindowManager.LayoutParams attributes = window.getAttributes();
@@ -458,6 +453,7 @@ public class Launcher extends Activity
 
         Utilities.showChangelog(this);
     }
+
 
     private void setScreenOrientation() {
         if (Utilities.getPrefs(this).getEnableScreenRotation()) {
@@ -475,11 +471,7 @@ public class Launcher extends Activity
         if (mPaused)
             kill = true;
         else
-            android.os.Process.killProcess(android.os.Process.myPid());
-    }
-
-    public void scheduleRecreate() {
-        recreate = true;
+            Utilities.restartLauncher(getApplicationContext());
     }
 
     public void scheduleUpdateWallpaper() {
@@ -654,9 +646,12 @@ public class Launcher extends Activity
 
         if (requestCode == REQUEST_EDIT_ICON) {
             if (data != null && data.hasExtra("alternateIcon")) {
-                mEditingItem.setIcon(this, data.getStringExtra("alternateIcon"));
-            } else {
-                mEditingItem.setIcon(this, null);
+                String alternateIcon = data.getStringExtra("alternateIcon");
+                if ("-1".equals(alternateIcon)) {
+                    mEditingItem.setIcon(this, null);
+                } else {
+                    mEditingItem.setIcon(this, alternateIcon);
+                }
             }
             if (mEditingItem.getComponentName() != null)
                 Utilities.updatePackage(this, mEditingItem.getUser(), mEditingItem.getComponentName().getPackageName());
@@ -793,6 +788,20 @@ public class Launcher extends Activity
                 // TODO: Show a snack bar with link to settings
                 Toast.makeText(this, getString(R.string.msg_no_phone_permission,
                         getString(R.string.app_name)), Toast.LENGTH_SHORT).show();
+            }
+        }
+        if (requestCode == REQUEST_PERMISSION_STORAGE_ACCESS){
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)){
+                final Launcher _this = this;
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface di, int i) {
+                        Utilities.requestStoragePermission(_this);
+                    }
+                };
+                new AlertDialog.Builder(this).setTitle(R.string.title_storage_permission_required)
+                        .setMessage(R.string.content_storage_permission_required).setPositiveButton(android.R.string.ok, listener)
+                        .setCancelable(false).show();
             }
         }
     }
@@ -949,13 +958,7 @@ public class Launcher extends Activity
 
         if (kill) {
             kill = false;
-            Log.v("Settings", "Die Motherf*cker!");
-            Process.killProcess(Process.myPid());
-        }
-
-        if (recreate) {
-            recreate = false;
-            recreate();
+            Utilities.restartLauncher(getApplicationContext());
         }
 
         if (updateWallpaper) {
@@ -969,7 +972,7 @@ public class Launcher extends Activity
     private void reloadIcons() {
         mIconCache.pip.updateIconPack();
         mIconCache.clear();
-        Process.killProcess(Process.myPid());
+        Utilities.restartLauncher(getApplicationContext());
     }
 
     @Override
@@ -1172,7 +1175,6 @@ public class Launcher extends Activity
         setupOverviewPanel();
 
         // Setup the workspace
-        mWorkspace.setHapticFeedbackEnabled(Utilities.getPrefs(this).getEnableHapticFeedback());
         mWorkspace.setOnLongClickListener(this);
         mWorkspace.setup(mDragController);
         // Until the workspace is bound, ensure that we keep the wallpaper offset locked to the
@@ -1187,7 +1189,7 @@ public class Launcher extends Activity
         // Setup Apps and Widgets
         mAppsView = findViewById(R.id.apps_view);
         mWidgetsView = findViewById(R.id.widgets_view);
-        mAppsView.setSearchBarController(new DefaultAppSearchController());
+        mAppsView.setSearchBarController(new UnicodeStrippedAppSearchController());
 
         // Setup the drag controller (drop targets have to be added in reverse order in priority)
         mDragController.setDragScoller(mWorkspace);
@@ -4017,6 +4019,7 @@ public class Launcher extends Activity
         if (context instanceof Launcher) {
             return (Launcher) context;
         }
+
         return LauncherAppState.getInstance().getLauncher();
     }
 
@@ -4028,6 +4031,11 @@ public class Launcher extends Activity
     }
 
     public void startEditIcon(EditableItemInfo info) {
+        if (Utilities.isBlacklistedAppInstalled(this)) {
+            Toast.makeText(this, R.string.unauthorized_device, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         mEditingItem = info;
         setWaitingForResult(new PendingRequestArgs((ItemInfo) mEditingItem));
         Intent intent = new Intent(this, EditIconActivity.class);

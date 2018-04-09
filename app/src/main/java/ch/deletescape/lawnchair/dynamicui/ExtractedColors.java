@@ -56,8 +56,8 @@ public class ExtractedColors {
     private static final int IS_SUPER_DARK = 16;
     public static final int NAVIGATION_BAR_INDEX = 17;
 
-    public static final int NUM_COLOR_PROFILES = 16;
-    public static final int VERSION = 7;
+    public static final int NUM_COLOR_PROFILES = 17;
+    public static final int VERSION = 8;
 
     private static final String COLOR_SEPARATOR = ",";
 
@@ -205,6 +205,11 @@ public class ExtractedColors {
             } else {
                 hotseatColor = ColorUtils.setAlphaComponent(FeatureFlags.INSTANCE.useDarkTheme(FeatureFlags.DARK_ALLAPPS) ? Color.BLACK : Color.WHITE, (int) (0.25f * 255));
             }
+        }
+        boolean useCustomOpacity = Utilities.getPrefs(context).getHotseatShouldUseCustomOpacity();
+        if (useCustomOpacity) {
+            float customOpacity = Utilities.getPrefs(context).getHotseatCustomOpacity();
+            hotseatColor = ColorUtils.setAlphaComponent(hotseatColor, (int) (customOpacity * 255));
         }
         return hotseatColor;
     }

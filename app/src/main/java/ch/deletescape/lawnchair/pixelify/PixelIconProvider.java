@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -66,7 +67,7 @@ public class PixelIconProvider {
 
     private int getCorrectShape(Bundle bundle, Resources resources) {
         if (bundle != null) {
-            int roundIcons = bundle.getInt(mShapeInfo.getUseRoundIcon() ?
+            int roundIcons = bundle.getInt((mShapeInfo.getUseRoundIcon() && !TextUtils.isEmpty(mShapeInfo.getSavedPref())) ?
                     "com.google.android.calendar.dynamic_icons_nexus_round" :
                     "com.google.android.calendar.dynamic_icons", 0);
             if (roundIcons != 0) {
@@ -189,29 +190,31 @@ public class PixelIconProvider {
 
     public Drawable getDefaultIcon(LauncherActivityInfoCompat info, int iconDpi, Drawable drawable) {
         boolean isRoundPack = isRoundIconPack(sIconPack);
-        if ((drawable == null && (mBackportAdaptive || mShapeInfo.getUseRoundIcon())) ||
+        if ((drawable == null && (mBackportAdaptive || mShapeInfo.getUseRoundIcon()) && !TextUtils.isEmpty(mShapeInfo.getSavedPref())) ||
                 (isRoundPack && drawable instanceof CustomIconDrawable)) {
             Drawable roundIcon = getRoundIcon(info.getComponentName().getPackageName(), iconDpi);
             if (roundIcon != null)
                 drawable = roundIcon;
-            String packageName = info.getApplicationInfo().packageName;
-            if (isCalendar(packageName)) {
-                try {
-                    ActivityInfo activityInfo = mPackageManager.getActivityInfo(info.getComponentName(), PackageManager.GET_META_DATA | PackageManager.MATCH_UNINSTALLED_PACKAGES);
-                    Bundle metaData = activityInfo.metaData;
-                    Resources resourcesForApplication = mPackageManager.getResourcesForApplication(packageName);
-                    int shape = getCorrectShape(metaData, resourcesForApplication);
-                    if (shape != 0) {
-                        drawable = resourcesForApplication.getDrawableForDensity(shape, iconDpi);
-                    }
-                } catch (PackageManager.NameNotFoundException ignored) {
-                }
-            }
         }
 
         if (drawable == null) {
             drawable = info.getIcon(iconDpi);
         }
+
+        String packageName = info.getApplicationInfo().packageName;
+        if (isCalendar(packageName) && !Utilities.hasAlternativeIcon(mContext, info.getComponentName()) && TextUtils.isEmpty(mPrefs.getIconPackPackage())) {
+            try {
+                ActivityInfo activityInfo = mPackageManager.getActivityInfo(info.getComponentName(), PackageManager.GET_META_DATA | PackageManager.MATCH_UNINSTALLED_PACKAGES);
+                Bundle metaData = activityInfo.metaData;
+                Resources resourcesForApplication = mPackageManager.getResourcesForApplication(packageName);
+                int shape = getCorrectShape(metaData, resourcesForApplication);
+                if (shape != 0) {
+                    drawable = resourcesForApplication.getDrawableForDensity(shape, iconDpi);
+                }
+            } catch (PackageManager.NameNotFoundException ignored) {
+            }
+        }
+
         return drawable;
     }
 

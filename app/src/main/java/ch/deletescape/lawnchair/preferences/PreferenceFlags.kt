@@ -25,19 +25,27 @@ object PreferenceFlags {
     const val KEY_ICON_TEXT_SCALE_SB = "pref_iconTextScaleSB"
     const val KEY_BLUR_RADIUS = "pref_blurRadius"
     const val KEY_PREF_HOTSEAT_ICON_SCALE = "pref_hotseatIconScale"
+    const val KEY_PREF_HOTSEAT_HEIGHT_SCALE = "pref_hotseatHeightScale"
+    const val KEY_PREF_HOTSEAT_CUSTOM_OPACITY = "pref_hotseatCustomOpacity"
     const val KEY_PREF_ALL_APPS_ICON_SCALE = "pref_allAppsIconScale"
-    const val KEY_PREF_ALL_APPS_ICON_TEXT_SCALE = "pref_alllAppsIconTextScale"
+    const val KEY_PREF_ALL_APPS_ICON_TEXT_SCALE = "pref_allAppsIconTextScale"
+    const val KEY_PREF_ALL_APPS_ICON_PADDING_SCALE = "pref_allAppsIconPaddingScale"
 
     //Ints
     const val KEY_BLUR_MODE = "pref_blurMode"
 
     // Boolean
     const val KEY_SHOW_HIDDEN = "pref_showHidden"
+    const val KEY_HOTSEAT_SHOULD_USE_CUSTOM_OPACITY = "pref_hotseatShouldUseCustomOpacity"
     const val KEY_HOTSEAT_SHOULD_USE_EXTRACTED_COLORS = "pref_hotseatShouldUseExtractedColors"
     const val KEY_HOTSEAT_SHOULD_USE_EXTRACTED_COLORS_CACHE = KEY_HOTSEAT_SHOULD_USE_EXTRACTED_COLORS + "_cache"
     const val KEY_LIGHT_STATUS_BAR = "pref_lightStatusBar"
     const val KEY_CENTER_WALLPAPER = "pref_centerWallpaper"
     const val KEY_POPUP_CARD_THEME = "pref_popupCardTheme"
+    const val KEY_ICON_LABELS_IN_TWO_LINES = "pref_iconLabelsInTwoLines"
+    const val KEY_ANIMATED_CLOCK_ICON_ALTERNATIVE_CLOCK_APPS = "pref_animatedClockIconAlternativeClockApps"
+    const val KEY_ENABLE_PHYSICS = "pref_enablePhysics"
+    const val KEY_PREF_USE_SYSTEM_FONTS = "pref_useSystemFonts"
 
     // Various
     const val KEY_PREF_WS_LABEL_COLOR = "pref_workspaceLabelColor"
@@ -49,10 +57,13 @@ object PreferenceFlags {
     const val KEY_PREF_PINCH_TO_OVERVIEW = "pref_pinchToOverview"
     const val KEY_PREF_PULLDOWN_ACTION = "pref_pulldownAction"
     const val KEY_PREF_HOTSEAT_EXTRACTED_COLORS = "pref_hotseatShouldUseExtractedColors"
-    const val KEY_PREF_HAPTIC_FEEDBACK = "pref_enableHapticFeedback"
+    const val KEY_PREF_HOTSEAT_SHOW_ARROW = "pref_hotseatShowArrow"
+    const val KEY_PREF_HOTSEAT_SHOW_PAGE_INDICATOR = "pref_hotseatShowPageIndicator"
     const val KEY_PREF_KEEP_SCROLL_STATE = "pref_keepScrollState"
     const val KEY_FULL_WIDTH_SEARCHBAR = "pref_fullWidthSearchbar"
     const val KEY_SHOW_PIXEL_BAR = "pref_showPixelBar"
+    const val KEY_SHOW_SEARCH_PILL = "pref_showSearchPill"
+    const val KEY_SHOW_DATE_OR_WEATHER = "pref_showDateOrWeather"
     const val KEY_SHOW_VOICE_SEARCH_BUTTON = "pref_showMic"
     const val KEY_PREF_ALL_APPS_OPACITY = "pref_allAppsOpacitySB"
     const val KEY_PREF_SHOW_HIDDEN_APPS = "pref_showHidden"
@@ -91,15 +102,20 @@ object PreferenceFlags {
 
     const val KEY_APP_VISIBILITY_PREFIX = "visibility_"
     const val KEY_PREVIOUS_BUILD_NUMBER = "previousBuildNumber"
+    const val KEY_DISABLE_LAWNFEED_POPUP = "disableLawnfeedPopup"
 
     const val KEY_ALTERNATE_ICON_PREFIX = "alternateIcon_"
     const val KEY_ITEM_ALIAS_PREFIX = "alias_"
     const val KEY_USER_CREATION_TIME_KEY_PREFIX = "user_creation_time_"
+    const val KEY_HIDDEN_APPS_SET = "hidden-app-set"
+    const val KEY_HIDDEN_APPS = "hidden-app"
+    const val KEY_TWO_ROW_DOCK = "pref_twoRowDock"
 
     const val EMPTY_DATABASE_CREATED = "EMPTY_DATABASE_CREATED"
+    const val KEY_AYY_MATEY = "pref_ayy_matey"
+
 
     // STATES
-    const val KEY_REQUIRES_ICON_CACHE_RELOAD = "requiresIconCacheReload"
     // The set of shortcuts that are pending install
     const val APPS_PENDING_INSTALL = "apps_to_install"
     const val RESTORE_TASK_PENDING = "restore_task_pending"

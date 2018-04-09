@@ -230,6 +230,7 @@ public class DragController implements DragDriver.EventListener, TouchController
                 : 0f;
         final DragView dragView = mDragObject.dragView = new DragView(mLauncher, b, registrationX,
                 registrationY, initialDragViewScale, scaleDps);
+        dragView.setItemInfo(dragInfo);
 
         mDragObject.dragComplete = false;
         if (mOptions.isAccessibleDrag) {
@@ -390,7 +391,7 @@ public class DragController implements DragDriver.EventListener, TouchController
             this.mOptions.preDragCondition.onPreDragEnd(this.mDragObject, false);
         }
         this.mIsInPreDrag = false;
-        for (DragListener onDragEnd : this.mListeners) {
+        for (DragListener onDragEnd : new ArrayList<>(mListeners)) {
             onDragEnd.onDragEnd();
         }
     }
@@ -482,7 +483,7 @@ public class DragController implements DragDriver.EventListener, TouchController
      * Call this from a drag source view.
      */
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
+    public boolean onControllerInterceptTouchEvent(MotionEvent ev) {
         if (mOptions != null && mOptions.isAccessibleDrag) {
             return false;
         }
@@ -623,7 +624,7 @@ public class DragController implements DragDriver.EventListener, TouchController
      * Call this from a drag source view.
      */
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
+    public boolean onControllerTouchEvent(MotionEvent ev) {
         if (mDragDriver == null || mOptions == null || mOptions.isAccessibleDrag) {
             return false;
         }

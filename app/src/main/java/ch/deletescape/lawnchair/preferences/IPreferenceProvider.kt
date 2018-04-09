@@ -11,6 +11,8 @@ interface IPreferenceProvider {
     // SORTED by Feature
     // -------------------
 
+    var restoreSuccess: Boolean
+
     // -------------------
     // 1) App Theme
     // -------------------
@@ -31,6 +33,7 @@ interface IPreferenceProvider {
     val showHidden: Boolean
     val allAppsIconScale: Float
     val allAppsIconTextScale: Float
+    val allAppsIconPaddingScale: Float
     val useCustomAllAppsTextColor: Boolean
     val verticalDrawerLayout: Boolean
 
@@ -66,11 +69,14 @@ interface IPreferenceProvider {
     fun hotseatShouldUseExtractedColorsCache(value: Boolean, commit: Boolean = false)
     fun lightStatusBarKeyCache(default: Boolean): Boolean
     fun lightStatusBarKeyCache(value: Boolean, commit: Boolean = false)
-    val enableHapticFeedback: Boolean
+    val hotseatShowArrow: Boolean
+    val hotseatShowPageIndicator: Boolean
     val keepScrollState: Boolean
     val useFullWidthSearchBar: Boolean
     val showVoiceSearchButton: Boolean
     val showPixelBar: Boolean
+    val showSearchPill: Boolean
+    val showDateOrWeather: Boolean
     val homeOpensDrawer: Boolean
     val usePixelIcons: Boolean
     val enableScreenRotation: Boolean
@@ -81,6 +87,7 @@ interface IPreferenceProvider {
     val transparentHotseat: Boolean
     val enableDynamicUi: Boolean
     val enableBlur: Boolean
+    fun enableBlur(enable: Boolean)
     val enableVibrancy: Boolean
     val useWhiteGoogleIcon: Boolean
     val useRoundSearchBar: Boolean
@@ -91,8 +98,10 @@ interface IPreferenceProvider {
     val showWeather: Boolean
     val lockDesktop: Boolean
     val animatedClockIcon: Boolean
-    val animateClockIconAlternativeClockApps: Boolean
-
+    val animatedClockIconAlternativeClockApps: Boolean
+    val useSystemFonts: Boolean
+    val iconLabelsInTwoLines: Boolean
+    val twoRowDock: Boolean
     val pulldownAction: String
 
     // -----------------
@@ -106,9 +115,9 @@ interface IPreferenceProvider {
     fun alternateIcon(key: String): String?
     fun alternateIcon(key: String, alternateIcon: String, commit: Boolean = false)
     fun removeAlternateIcon(key: String)
-    fun appVisibility(context: Context, key: String, visible: Boolean, commit: Boolean = false)
-    fun appVisibility(context: Context, key: String): Boolean
+    var hiddenAppsSet : Set<String>
     var previousBuildNumber : Int
+    var disableLawnfeedPopup: Boolean
     var overrideIconShape: String
     val backportAdaptiveIcons: Boolean
     fun removeOverrideIconShape()
@@ -125,6 +134,11 @@ interface IPreferenceProvider {
     val iconTextScaleSB: Float
     val iconPackPackage: String
     val hotseatIconScale: Float
+    val hotseatHeightScale: Float
+    val hotseatShouldUseCustomOpacity: Boolean
+    val hotseatCustomOpacity: Float
+    val enablePhysics: Boolean
+    val ayyMatey: Boolean
 
     // -----------------
     // GENERAL - BITS
@@ -137,7 +151,6 @@ interface IPreferenceProvider {
     // STATES
     // -----------------
 
-    var requiresIconCacheReload: Boolean
     var emptyDatabaseCreated: Boolean
     fun removeEmptyDatabaseCreated()
     fun userCreationTimeKeyExists(key: Long): Boolean
